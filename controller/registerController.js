@@ -1,8 +1,11 @@
 const {registerUser} = require('../users/users')
+const {showData} = require('../users/users')
+
 
 const handleUserRegistration = async (req,res)=>{
-    const {username,password}= req.body
-    await registerUser(username,password)
+    const {username,password,email,role}= req.body
+    await registerUser(username,password,email,role)
+    showData()
     return res.status(201).json({
         status : 'Success',
         statusCode : 201,

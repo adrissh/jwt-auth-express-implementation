@@ -4,11 +4,10 @@ const bcrypt = require('bcryptjs');
 const users = []; // result hash store this array , 
 
 
-const registerUser = async(username,password)=>{
+const registerUser = async(username,password,email,role)=>{
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = {username,password :hashedPassword};
+    const user = {username,password :hashedPassword,email,role};
     users.push(user)
-    // console.log(users)
     return users
     }
 
@@ -28,8 +27,8 @@ const pushRefreshToken = (refreshToken)=>{
 
 const showData = ()=>{
     const data = users;
-    // console.log("####################################")
-    // console.log(data)
+    console.log("####################################")
+    console.log(data)
 }
 
 

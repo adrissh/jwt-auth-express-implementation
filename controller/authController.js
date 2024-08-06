@@ -1,4 +1,4 @@
-const {findUserByUsername,findRefreshToken, pushRefreshToken, showData} = require('../users/users')
+const {findUserByUsername,findRefreshToken, pushRefreshToken} = require('../users/users')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 require('dotenv').config()
@@ -22,8 +22,8 @@ const userLoginController = async(req,res)=>{
     if(await bcrypt.compare(password,user.password)){
         const expiresIn = 60;  // second
         const expirationDate = new Date(Date.now() + expiresIn * 1000);
-        const generateToken = jwt.sign({username : user.username , email :'adrilukman@hotmail.com' },process.env.SECRET_KEY,{expiresIn})
-        const generateRefreshToken = jwt.sign({username : user.username},process.env.REFRESH_SECRET_KEY,{expiresIn : '60m'})
+        const generateToken = jwt.sign({username : user.username , email :user.email, role: user.role },process.env.SECRET_KEY,{expiresIn})
+        const generateRefreshToken = jwt.sign({username : user.username, role: user.role},process.env.REFRESH_SECRET_KEY,{expiresIn : '60m'})
         // console.log(generateToken)
         pushRefreshToken(generateRefreshToken)
         // showData()
@@ -72,7 +72,6 @@ const userLoginController = async(req,res)=>{
 
 const generateNewAccessToken  = async(req,res)=>{
     const oldRefreshToken = req.cookies['refreshToken']
-    const oldAccessToken = req.cookies['accessToken']
   if(!oldRefreshToken){
     return res.status(401).json({ 
       status : 'failed',
@@ -86,14 +85,11 @@ const generateNewAccessToken  = async(req,res)=>{
 
   try{
     const decode = jwt.verify(oldRefreshToken,process.env.REFRESH_SECRET_KEY)
+
+    console.log(`hasil decode Refresh-token ${JSON.stringify(decode)}`)
     
-    const newAccesToken = jwt.sign({username : decode.username , email : decode.email},process.env.SECRET_KEY,{expiresIn : '2m'})
-    const newRefreshToken = jwt.sign({username : decode.username},process.env.REFRESH_SECRET_KEY,{expiresIn : '1 days'})
-    // console.log(`akses token baru => ${newAccesToken}`)
-    // console.log(`akses token lama => ${oldAccessToken}`)
-    // console.log(`refresh token lama =>${oldRefreshToken}`)
-    // console.log(`refresh token baru =>${newRefreshToken}`)
-    // set cookie with new access-token & new refresh-token
+    const newAccesToken = jwt.sign({username : decode.username , email : decode.email , role : decode.role},process.env.SECRET_KEY,{expiresIn : '2m'})
+    const newRefreshToken = jwt.sign({username : decode.username ,  role : decode.role},process.env.REFRESH_SECRET_KEY,{expiresIn : '1 days'})
     res.cookie('accessToken',newAccesToken,{
       httpOnly: true,
       secure: false, // Gunakan HTTPS di production
